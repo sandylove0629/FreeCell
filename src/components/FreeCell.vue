@@ -7,13 +7,13 @@
       </div>
     </div>
     <div class="under-block">
-      <div class="line-block" v-for="block in underBlock">
+      <div class="line-block" v-for="(block, bIndex) in underBlock" :key="bIndex">
         <div class="blank-card"></div>
         <draggable :list="block.block" group="pLine" @change="log"
                    :move="movePoker" @start="curList = block.block" class="h-100-p">
           <div
                   class="poker"
-                  v-for="(poker, index) in block.block"
+                  v-for="poker in block.block"
                   :key="poker.num"
           >
             <img class="poker-card" :src="require(`@/assets/card/${poker.num}.svg`)">
@@ -44,7 +44,7 @@
     </div>
     <div class="footer-block flex">
       <div class="left-block flex">
-        <div class="blank-card" v-for="index in 4"></div>
+        <div class="blank-card" v-for="index in 4" :key="index"></div>
       </div>
       <div class="setting-block">
         <div class="flex text-center">
@@ -66,7 +66,7 @@
         </div>
       </div>
       <div class="right-block flex">
-        <div class="blank-card right-card" v-for="index in 4"></div>
+        <div class="blank-card right-card" v-for="index in 4" :key="index"></div>
       </div>
     </div>
   </div>
@@ -127,12 +127,12 @@ export default {
       else color = 's' // spade
       return color + index
     },
-    checkLast (line, index) {
-      console.log(line.length - 1)
+    checkLast (line) {
+      // console.log(line.length - 1)
       if (line.length === 6) return true
       else return false
     },
-    movePoker (evt, originalEvent) {
+    movePoker (evt) {
       // 移動的內容
       // console.log(evt.draggedContext.element)
       // 每排最後一個element才可移動
@@ -142,8 +142,8 @@ export default {
       }
       return false
     },
-    log (e) {
-      console.log(e)
+    log () {
+      // console.log(e)
     }
   },
   computed: {
@@ -182,8 +182,10 @@ $r-card-text: #282828
 @font-face
   font-family: 'Noto Sans TC'
   font-style: normal
-  font-weight: 100
-  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Black.woff2)
+  font-weight: 800
+  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Bold.woff2) format('woff2')
+  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Bold.woff) format('woff')
+  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Bold.otf) format('opentype')
 *
   box-sizing: border-box
   font-family: 'Noto Sans TC', '微軟正黑體', sans-serif
