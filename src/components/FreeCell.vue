@@ -5,56 +5,40 @@
       <div class="ice-mountain">
         <img src="@/assets/element/element_ice.svg">
       </div>
+      <div class="penguin penguin-lg">
+        <img src="@/assets/element/element-25.svg">
+      </div>
+      <div class="penguin penguin-sm">
+        <img src="@/assets/element/element-26.svg">
+      </div>
     </div>
     <div class="under-block">
-      <div class="line-block" v-for="(block, bIndex) in underBlock" :key="bIndex">
+      <div class="line-block" v-for="block in underBlock">
         <div class="blank-card"></div>
         <draggable :list="block.block" group="pLine" @change="log"
                    :move="movePoker" @start="curList = block.block" class="h-100-p">
           <div
                   class="poker"
                   v-for="poker in block.block"
-                  :key="poker.num"
           >
             <img class="poker-card" :src="require(`@/assets/card/${poker.num}.svg`)">
-            <!--{{transformCard(poker.num)}} {{index}}-->
           </div>
         </draggable>
       </div>
-      <!--
-      <draggable v-model="underBlock">
-        <transition-group class="flex">
-          <div class="line-block" v-for="block in underBlock" :key="block.line">
-            <div v-for="poker in block.block">
-              <img class="poker-card" :src="require(`@/assets/card/${poker.num}.svg`)">
-              {{transformCard(poker.num)}}
-            </div>
-          </div>
-        </transition-group>
-      </draggable>
-      -->
-      <!--
-      <div class="line-block" v-for="block in underBlock">
-        <div v-for="poker in block">
-          <img class="poker-card" :src="require(`@/assets/card/${poker}.svg`)">
-          {{transformCard(poker)}}
-        </div>
-      </div>
-      -->
     </div>
     <div class="footer-block flex">
       <div class="left-block flex">
-        <div class="blank-card" v-for="index in 4" :key="index"></div>
+        <div class="blank-card" v-for="block in leftBlock"></div>
       </div>
       <div class="setting-block">
         <div class="flex text-center">
-          <div class="btn-setting">
+          <div class="btn-setting c-pointer">
             <img src="@/assets/element/element-14.svg">
           </div>
           <div class="btn-setting">
             <img src="@/assets/element/element-16.svg">
           </div>
-          <div class="btn-setting">
+          <div class="btn-setting c-pointer" @click="showModal = true">
             <img src="@/assets/element/element-15.svg">
           </div>
         </div>
@@ -62,11 +46,43 @@
           Score&nbsp;|&nbsp;000
         </div>
         <div class="text-left text">
-          Time&nbsp;&nbsp;|&nbsp;00:00
+          Time&nbsp;&nbsp;|&nbsp;{{showTime}}
         </div>
       </div>
       <div class="right-block flex">
-        <div class="blank-card right-card" v-for="index in 4" :key="index"></div>
+        <div class="blank-card right-card"  v-for="block in rightBlock"></div>
+      </div>
+    </div>
+    <div class="setting-modal flex" v-show="showModal">
+      <div class="bg" @click="showModal = false"></div>
+      <div class="card-board">
+        <!--bg-penguin-->
+        <div class="l-penguin">
+          <img src="@/assets/element/element-12.svg">
+        </div>
+        <div class="r-penguin">
+          <img src="@/assets/element/element-13.svg">
+        </div>
+
+        <div class="setting-block">
+          <div class="close c-pointer" @click="showModal = false">
+            ✕
+          </div>
+          <h1 class="title">FREE CELL</h1>
+          <h4 class="sub-title">SAVE THE ICE</h4>
+          <div>
+            <button class="d-btn" @click="createRandom">Quit and Start A New Game</button>
+          </div>
+          <div>
+            <button class="d-btn">Restart This Game</button>
+          </div>
+          <div>
+            <button class="d-btn">Keep Playing</button>
+          </div>
+          <div>
+            <button class="d-btn blue-btn">Practical Action</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -74,6 +90,7 @@
 
 <script>
 import draggable from 'vuedraggable'
+import moment from 'moment'
 export default {
   name: 'FreeCell',
   components: {
@@ -96,21 +113,39 @@ export default {
       isSuccessDeck: false, // 右存放的動作
       successDeckNum: null, // 右存放的牌區
       gamePause: false, // 暫停狀態
-      //
-      curList: [] // 拖移的行
+      curList: [], // 拖移的行
+      showModal: false,
+      start: false,
+      time: 0,
+      timeOut: ''
     }
   },
   created () {
     this.createRandom()
   },
   methods: {
+    shufflePoker () {
+      let i, j, temp
+      let arr = this.poker
+      for (i = arr.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1))
+        temp = arr[i]
+        arr[i] = arr[j]
+        arr[j] = temp
+      }
+      return arr
+    },
     createRandom () {
+      this.start = false
+      this.showModal = false
+      this.underBlock = []
       let blockLength = [7, 7, 7, 7, 6, 6, 6, 6]
       let i = 0
       let bl = blockLength[i]
-      for (let j = 0; j < this.shufflePoker.length; j+=bl) {
+      let shufflePoker = this.shufflePoker()
+      for (let j = 0; j < shufflePoker.length; j+=bl) {
         let obj = {
-          block: this.shufflePoker.slice(j, j + bl),
+          block: shufflePoker.slice(j, j + bl),
           line: i + 1
         }
         this.underBlock.push(obj)
@@ -144,6 +179,21 @@ export default {
     },
     log () {
       // console.log(e)
+      if (!this.start) this.start = true
+    },
+    setTime () {
+      const isStart = this.start
+      const self = this
+      if (isStart) {
+        this.time++
+        this.timeOut = setTimeout(function () {
+          self.setTime()
+        }, 1000)
+      }
+      else {
+        this.time = 0
+        clearTimeout(this.timeOut)
+      }
     }
   },
   computed: {
@@ -158,16 +208,23 @@ export default {
       }
       return poker
     },
-    shufflePoker () {
-      let i, j, temp
-      let arr = this.poker
-      for (i = arr.length - 1; i > 0; i--) {
-        j = Math.floor(Math.random() * (i + 1))
-        temp = arr[i]
-        arr[i] = arr[j]
-        arr[j] = temp
+    showTime () {
+      if (this.time) {
+        var newTime = moment.utc(this.time * 1000).format('mm:ss')
+        return newTime
       }
-      return arr
+      return '00:00'
+    }
+  },
+  watch: {
+    start () {
+      this.setTime()
+    },
+    showModal () {
+      if (this.showModal) clearTimeout(this.timeOut)
+      else if (this.time) {
+        this.setTime()
+      }
     }
   }
 }
@@ -178,14 +235,19 @@ $card-radius: 5px
 $card-p-t: 18px
 $card-p-r: 55px
 $d-color: #2A4254
+$l-blue: #C7E7FF
 $r-card-text: #282828
 @font-face
   font-family: 'Noto Sans TC'
   font-style: normal
   font-weight: 800
-  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Bold.woff2) format('woff2')
-  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Bold.woff) format('woff')
-  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Bold.otf) format('opentype')
+  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Black.woff2) format('woff2')
+  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Black.woff) format('woff')
+  src: url(//fonts.gstatic.com/ea/notosanstc/v1/NotoSansTC-Black.otf) format('opentype')
+@mixin shadow-top
+  box-shadow: 0px -1px 3px #888888
+@mixin shadow-bottom
+  box-shadow: 0px 1px 3px #888888
 *
   box-sizing: border-box
   font-family: 'Noto Sans TC', '微軟正黑體', sans-serif
@@ -218,13 +280,15 @@ body, html, #app
   height: 125px
   border: 3px solid #fafafa
   border-radius: $card-radius
+.c-pointer
+  cursor: pointer
 .poker
   position: relative
   width: 100%
   padding: $card-p-t $card-p-r
   .poker-card
     border-radius: $card-radius
-    box-shadow: 0px -1px 3px #888888
+    @include shadow-top
     height: 125px
     position: absolute
     left: 0
@@ -283,4 +347,80 @@ body, html, #app
   padding: 0px 5px
   img
     width: 40px
+.penguin
+  position: absolute
+  bottom: 0
+  transform: rotateY(180deg)
+  img
+    width: 50px
+  &.penguin-sm
+    left: 10%
+  &.penguin-lg
+    left: calc(10% + 60px)
+.setting-modal
+  position: fixed
+  height: 100vh
+  width: 100vw
+  background-color: rgba(256, 256, 256, 0.5)
+  top: 0
+  left: 0
+  justify-content: center
+  align-items: center
+  .bg
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+  .card-board
+    @include shadow-bottom
+    height: 400px
+    width: 750px
+    background-color: #fff
+    border-radius: 5px
+    position: relative
+    overflow: hidden
+    .title
+      letter-spacing: 10px
+      font-weight: bold
+      margin-bottom: 10px
+      line-height: 25px
+    .sub-title
+      letter-spacing: 5px
+      margin: 0px 0px 10px 0px
+      font-weight: bold
+    .l-penguin, .r-penguin
+      position: absolute
+      bottom: -20px
+      img
+        width: 165px
+    .l-penguin
+      transform: rotateY(180deg)
+      left: 10px
+    .r-penguin
+      right: 10px
+    .close
+      position: absolute
+      top: 0
+      right: 0
+      font-size: 28px
+      padding: 15px 25px
+    .setting-block
+      z-index: 999
+.d-btn
+  font-size: 20px
+  margin: 10px
+  border: $d-color solid 3px
+  background-color: $l-blue
+  min-width: 300px
+  @include shadow-bottom
+  line-height: 35px
+  border-radius: 5px
+  cursor: pointer
+  z-index: 20
+  outline: none
+  &.blue-btn
+    background-color: $d-color
+    border: $l-blue solid 3px
+    color: #E9F5FE
 </style>
